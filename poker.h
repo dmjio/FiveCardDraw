@@ -11,6 +11,10 @@
 #define HAND_SIZE 5
 #define TOTAL_CASH 400
 #define ANTE_AMOUNT 5
+#define RUN_TESTS 0
+#define TRUE 1
+#define FALSE 0
+#define NUMBER_OF_SAMPLES 10000
 
 enum VALUE { Two = 0, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace };
 enum SUITE { Hearts = 0, Spades, Diamonds, Clubs };
@@ -114,7 +118,7 @@ void swap(Card*, Card*);
 void insert_exchange_into_hand(Exchange*, Hand*, int);
 
 /* expected value abstractions */
-void compute_expected_value(Hand * );
+int * compute_expected_value(Hand * hand, int isCPU);
 
 /* exchange turns */
 void exchange_turn(Player * , int , Deck * );

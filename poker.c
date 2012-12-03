@@ -5,10 +5,7 @@
 #include "test.h"
 #include <locale.h> 
 #include <wchar.h> 
-#define RUN_TESTS 0
-#define TRUE 1
-#define FALSE 0
-#define NUMBER_OF_SAMPLES 1000
+
 
 void build_deck(Deck * deck){
 	int i, j, c;
@@ -69,7 +66,8 @@ wchar_t * to_suite(int suite){
 
 char * to_val(int value){
 	if (value >= 0 && value <= VALUE_SIZE) {
-	char * values[VALUE_SIZE] = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
+	char * values[VALUE_SIZE] = { "2", "3", "4", "5", "6", "7", "8", "9", 
+									"10", "J", "Q", "K", "A" };
     	return values[value];
     }
     return ""; /* error */
@@ -135,7 +133,8 @@ Card deal_card(Deck * deck){ /* dequeue */
 void add_card(Deck * deck, Card card){ /* enqueue */
 	if (deck->size == DECK_SIZE)
 		return; /* can't add_card to a full deck */
-	deck->card[deck->tail] = card;
+	deck->card[deck->tail].suite = card.suite;
+	deck->card[deck->tail].value = card.value;
 	deck->tail = (deck->tail + 1) % DECK_SIZE;
 	deck->size++;
 	return;
@@ -152,8 +151,8 @@ void init_players(Player * players, int size){
 		players[i].amount = TOTAL_CASH / size;
 		players[i].isBetter = 0;
 	}
-	players[0].isComputer = 0;
-	players[0].name = "HU - Player 1 ";
+	players[0].isComputer = 1;
+	players[0].name = "AI - Player 1 ";
 	players[0].isBetter = 0;
 }
 
@@ -168,6 +167,13 @@ void hand_value(Hand * hand){
 }
 
 void best_hand(Hand * hand, int isFinalRound, int isCPU){
+
+			/* this method is a fall through that 
+				calculates hand value and 
+				prints results of hand
+				all in constant time */
+
+
 	int i, oneS, twoS, threeS, fourS, fiveS, oneV, twoV, threeV, fourV, fiveV;
 	sort_cards(hand->card, HAND_SIZE);
 	if (isFinalRound || !isCPU) print(hand->card, HAND_SIZE);
@@ -261,8 +267,8 @@ void best_hand(Hand * hand, int isFinalRound, int isCPU){
 
 	/* Three-of-a-Kind */
 	/* has a class rank of 4 */
-	for (i = 0; i < HAND_SIZE - 3; ++i){
-		if (hand->card[i].value == hand->card[i+1].value && hand->card[i+1].value == hand->card[i+2].value){
+	for (i = 0; i < HAND_SIZE - 2; ++i){
+		if ((hand->card[i].value == hand->card[i+1].value) && (hand->card[i+1].value == hand->card[i+2].value)){
 			hand->highCard.value = fiveV;
 			hand->highCard.suite = fiveS;
 			hand->_class = 4;
@@ -322,7 +328,7 @@ void best_hand(Hand * hand, int isFinalRound, int isCPU){
 	
 }
 
-void compute_expected_value(Hand * hand) {
+int * compute_expected_value(Hand * hand, int isCPU) {
 
 	/* discard none (5 choose 0) == 1 */
 
@@ -350,6 +356,7 @@ void compute_expected_value(Hand * hand) {
 
 	int i, j, size, k, l, z, y;
 	size = NUMBER_OF_SAMPLES;
+	int * result = malloc(sizeof(int) * 5);
 
 	int cases[32][5] = {
 
@@ -389,7 +396,7 @@ void compute_expected_value(Hand * hand) {
 	     {1,0,1,1,1},
 	     {0,1,1,1,1},
 
-	     {1,1,1,1,1}, /* last case */
+	     {1,1,1,1,1}, /* last case, swap all */
 	
 	 };
 
@@ -399,10 +406,11 @@ void compute_expected_value(Hand * hand) {
 	Card * temp = malloc(sizeof(Card) * HAND_SIZE);
 	int expected_array[32];
 
-	/* init our array */
+	/* cleanse our array */
 	for (i = 0; i < 32; ++i) expected_array[i] = 0;
 
-	printf("Computing expected value via Monte Carlo simulation\n");
+	if (!isCPU)
+		printf("Computing expected value via Monte Carlo simulation\n");
 
 	/* first case 5 choose 0 */
 	/* first value of expected array is the expected value of doing nothing, 
@@ -412,7 +420,6 @@ void compute_expected_value(Hand * hand) {
 	shuffle_deck(deck);	
 	memcpy(temp, &hand->card, sizeof(Card) * HAND_SIZE); /* hold on to this for restore */	
 	for (i = 0; i < 32; i++){
-			printf(".");
 			l = 0;
 			for (k = 0; k < HAND_SIZE; ++k){
 				if (cases[i][k]){
@@ -459,8 +466,6 @@ void compute_expected_value(Hand * hand) {
 		expected_array[i] = expected_array[i] / size; /* average */
 	}
 
-	printf("\n");
-
 	/* find largest value inside our expected values array and its index */
 	j = k = 0;
 	for (i = 0; i < 32; ++i)
@@ -469,20 +474,27 @@ void compute_expected_value(Hand * hand) {
 			k = i;
 		}
 
-	printf("largest: %d at %d\n", j, k);
+	/*printf("largest: %d at %d\n", j, k);*/
 
 
 	/* MC recommendation */
-	if (k == 0)
-		printf("MC: I recommend that you keep your current hand\n");
-	else if (k > 0){ 
-		printf("MC: I recommend that you exchange cards: ");
-		for (i = 0; i < 5; ++i){
-			if (cases[k][i])
-				printf("%d ", i+1);
+	if (!isCPU){
+		if (k == 0)
+			printf("MC: I recommend that you keep your current hand\n");
+		else if (k > 0){ 
+			printf("MC: I recommend that you exchange card(s): ");
+			for (i = 0; i < 5; ++i){
+				if (cases[k][i])
+					printf("%d ", i+1);
+			}
+			printf("\n");
 		}
-		printf("\n");
+		printf("MC: type 'y' to do so\n");
 	}
+	memcpy(result, &cases[k], sizeof(int) * 5);
+	if (k == 0)
+		result[0] = -1;
+	return result;
 }
 
 void init_deck(Deck * deck){
@@ -493,7 +505,7 @@ void init_deck(Deck * deck){
 void show_hands(Player * players, int player_count, int lastRound){
 	int i;
 	for (i = 0; i < player_count; ++i) { 
-		if ((players[i].isActive && !players[i].isComputer) || lastRound){
+		if (players[i].isActive){
 			printf("%s", players[i].name);
 			best_hand(players[i].hand, lastRound, players[i].isComputer);
 		}
@@ -501,11 +513,13 @@ void show_hands(Player * players, int player_count, int lastRound){
 }
 
 void reset_game(Game * g){
-	g = malloc(sizeof(Game));
-	init_game(g);
+	free(g);
+	Game * game = malloc(sizeof(Game));
+	init_game(game);
 }
 
 void init_game(Game * game){
+	printf("Welcome to 5-card draw Poker with Monte Carlo simulations!\n");
 	game->deck = malloc(sizeof(Deck));
 	game->players = malloc(sizeof(Player) * PLAYER_SIZE);
 	game->value = TOTAL_CASH;
@@ -521,98 +535,119 @@ void betting_round(Game * game, Player * players, int player_size){
 	i = 0;
 	char * result = malloc(sizeof(char) * 10);
 	int bet;
+	int count;
 
-	/* clear previous better */
-	for (i = 0; i < player_size; ++i)
-		players[i].isBetter = 0;
+	/* check to make sure everyone didn't fold */
+	/* if everyone has folded */
+	count = 0;
+	for (i = 0; i < PLAYER_SIZE; ++i)
+		if (players[i].isActive && players[i].hasFolded)
+			count++;
 
-	/* determine new better, randomly */
-	find_better:
-		i = rand() % 4;
-		if (!players[i].isActive)
-			goto find_better;
-		players[i].isBetter = 1;
-			
-	/* make bets */
-		for (i = 0; i < player_size; ++i) {
-			if (players[i].isComputer && players[i].isBetter){
-					bet = rand() % players[i].amount;
+	if (player_size - count != 1 && game->pot != TOTAL_CASH){ /* everyone has folded go straight to determining winner */
+		/* clear previous better */
+		for (i = 0; i < player_size; ++i)
+			players[i].isBetter = 0;
+
+		/* determine new better, randomly */
+		find_better:
+			i = rand() % 4;
+			if (!players[i].isActive || players[i].hasFolded)
+				goto find_better;
+			players[i].isBetter = 1;
+				
+		/* make bets */
+			for (i = 0; i < player_size; ++i) {
+				if (players[i].isComputer && players[i].isBetter){
+						bet = rand() % players[i].amount;
+						printf("%s bet %d\n", players[i].name, bet);
+						players[i].amount -= bet;
+						game->pot += bet;
+
+				}
+				if (!players[i].isComputer && players[i].isBetter){
+					printf("What would you like to bet? (ex: 1, 10, 50), you have: %d\n", players[i].amount);
+				bet:
+					scanf("%s", result);
+					bet = atoi(result);
+					if (bet > players[i].amount || bet < 0){
+						printf("Too high or too low, please try again\n");
+						goto bet;
+					}
 					printf("%s bet %d\n", players[i].name, bet);
 					players[i].amount -= bet;
 					game->pot += bet;
-
-			}
-			if (!players[i].isComputer && players[i].isBetter){
-				printf("What would you like to bet? (ex: 1, 10, 50), you have: %d\n", players[i].amount);
-			bet:
-				scanf("%s", result);
-				bet = atoi(result);
-				if (bet > players[i].amount || bet < 0){
-					printf("Too high or too low, please try again\n");
-					goto bet;
 				}
-				printf("%s bet %d\n", players[i].name, bet);
-				players[i].amount -= bet;
-				game->pot += bet;
 			}
-		}
-		/* if player is not better, he must meet the bet or fold */
-		for (i = 0; i < player_size; ++i) {
-			if (!players[i].hasFolded){
-				if (players[i].isComputer && !players[i].isBetter){
-					if (players[i].amount - bet < 0) {
-						players[i].hasFolded = 1;
-						printf("%s has folded\n", players[i].name);
+			/* if player is not better, he must meet the bet or fold */
+			for (i = 0; i < player_size; ++i) {
+				if (!players[i].hasFolded && players[i].isActive){
+					if (players[i].isComputer && !players[i].isBetter){
+						if (players[i].amount - bet < 0) {
+							players[i].hasFolded = 1;
+							printf("%s has folded\n", players[i].name);
+						}
+						else {
+							players[i].amount -= bet;
+							printf("%s called the bet\n", players[i].name);
+							game->pot += bet;
+						}
 					}
-					else {
-						players[i].amount -= bet;
-						printf("%s called the bet\n", players[i].name);
-						game->pot += bet;
-					}
-				}
-				if (!players[i].isComputer && !players[i].isBetter){
-					if (players[i].amount - bet < 0) {
-						players[i].hasFolded = 1;
-						printf("%s has folded\n", players[i].name);
-					}
-					else {
-					printf("What would you like to do? Call or Fold? (ex: 'c' or 'f') \n");
-					scanf("%s", result);
-					if (!strncmp(result, "c", strlen("c"))){
-						players[i].amount -= bet;
-						printf("%s called the bet\n", players[i].name);
-						game->pot += bet;
-					}
-					else {
-						players[i].hasFolded = 1;
-						printf("%s has folded\n", players[i].name);
+					if (!players[i].isComputer && !players[i].isBetter){
+						if (players[i].amount - bet < 0) {
+							players[i].hasFolded = 1;
+							printf("%s has folded\n", players[i].name);
+						}
+						else {
+						printf("What would you like to do? Call or Fold? (ex: 'c' or 'f') \n");
+						scanf("%s", result);
+						if (!strncmp(result, "c", strlen("c"))){
+							players[i].amount -= bet;
+							printf("%s called the bet\n", players[i].name);
+							game->pot += bet;
+						}
+						else {
+							players[i].hasFolded = 1;
+							printf("%s has folded\n", players[i].name);
+						}
 					}
 				}
 			}
 		}
+		printf("Current pot at: %d\n", game->pot);
 	}
+
 	free(result);
-	printf("Current pot at: %d\n", game->pot);
 }
 
 void exchange_turn(Player * players, int player_size, Deck * deck){
-	int i;
-	for (i = 0; i < player_size; ++i) 
-		prompt_player(&players[i], deck);
+	int i, count;
+	/* check to make sure everyone didn't fold */
+	/* if everyone has folded */
+	count = 0;
+	for (i = 0; i < PLAYER_SIZE; ++i)
+		if (players[i].isActive && players[i].hasFolded)
+			count++;
+
+	if (player_size - count != 1) /* everyone has folded skip */
+		for (i = 0; i < player_size; ++i) 
+			prompt_player(&players[i], deck);
 }
 
 void clear_screen(){ printf("\e[1;1H\e[2J"); }
 
 void ante_up(Game * game){
-	int i;
+	int i, count;
+	count = 0;
 	for (i = 0; i < game->player_count; ++i){
 		if (game->players[i].isActive){
 			if ((game->players[i].amount - game->ante) < 0){
 				printf("%s loses, not enough money to play\n", game->players[i].name);
 				game->players[i].isActive = 0;
+				game->players[i].hasFolded = 1;
 				game->pot += game->players[i].amount; /* leftovers go into pot */
 				game->players[i].amount = 0;
-				game->player_count -= 1;
+				count++;
 				continue;
 			}
 			game->pot += game->ante; /* increase pot */
@@ -620,44 +655,45 @@ void ante_up(Game * game){
 			printf("%s ante's %d, now has: %d chips\n", game->players[i].name, game->ante, game->players[i].amount);
 		}
 	}
-	printf("pot at: %d\n", game->pot);
+	printf("Pot at: %d\n", game->pot);
 }
 
 int game_winner(Game * game, int psize){
 	int i;
-	char * result = malloc(sizeof(char) * 2);
+	char * result = malloc(sizeof(char));
 	for (i = 0; i < psize; ++i){
 	 	if (game->players[i].amount == TOTAL_CASH){
 	 		printf("%s is the winner. \n", game->players[i].name);
 	 		printf("Would you like to play again? 'y' or 'n'\n");
+	 		scanf("%s", result);
 	 		if (!strncmp(result, "y", strlen("y"))){
+	 			clear_screen();
 	 			reset_game(game);
 	 			return 0;
 	 		}
 	 		return 1;
 	 	}
 	 } 
+	 init_deck(game->deck); /* reset deck */
 	 return 0;
 }
 
 int start_game() {
 
-    if (RUN_TESTS) return test_hands();  /* enable and disables tests */ 
-	
+    if (RUN_TESTS) return test_queue();  /* enable and disables tests */ 
 	Game * game = malloc(sizeof(Game));
 	init_game(game);
 
 	while (!game_winner(game, game->player_count)) {
 		
-
 		/* deal players */
 		deal_players(game->players, game->deck);
 
 		/* ante up */
 		ante_up(game);
 
-		/* show hand to human player */
-		show_hands(game->players, game->player_count, FALSE);
+		/* show hand to human player (cpu show is disabled, enable it to see some action) */
+		show_hands(game->players, game->player_count, TRUE);
 
 		/* first round of betting */
 		betting_round(game, game->players, game->player_count);
@@ -679,84 +715,116 @@ int start_game() {
 
 void prompt_player(Player * p, Deck * d){
 	Card temp;
+	int * recommendation = malloc(sizeof(int) * HAND_SIZE);
 	char * result = malloc(sizeof(char)*10);
 	int i, j, k; 
 	Exchange * e = malloc(sizeof(Exchange));
 
 	i = j = 0;
-	if (!p->hasFolded){
+	if (!p->hasFolded && p->isActive){
 		if (p->isComputer){
-			/* insert monte carlo decision analyzer here */
-			/* in the meantime just select a # at random */
 
-			j = 1;
-			k = rand() % 5;
+			/* monte carlo this ish! */
+			recommendation = compute_expected_value(p->hand, p->isComputer);
 
-			temp = p->hand->card[k]; 
-			p->hand->card[k].suite = -1;
-			p->hand->card[k].value = -1;
-			e->card[0] = temp;
-
-			/*printf("%s Exchanged: ", p->name);
+			/* computer automatically takes the MC recommendations every time */
+			if (recommendation[0] != -1){
+				for (i = 0; i < HAND_SIZE; ++i)
+					if (recommendation[i]){
+						e->card[j++] = p->hand->card[i];
+						p->hand->card[i].suite = -1;
+						p->hand->card[i].value = -1;
+					}
+			
+			printf("%s Exchanged: ", p->name);
 			for (i = 0; i < j; ++i){	
 				printf("%s%ls ", to_val(e->card[i].value), to_suite(e->card[i].suite));
 			}
-			printf(" For: ");*/
+			printf("\n\t\t     For: ");
 			exchange_card(d, e, j);
-			/*for (i = 0; i < j; ++i){
+			for (i = 0; i < j; ++i){
 				printf("%s%ls ", to_val(e->card[i].value), to_suite(e->card[i].suite));
-			}*/
+			}
 
 			insert_exchange_into_hand(e, p->hand, j);
-			/*printf(" New hand: ");*/
-			best_hand(p->hand, FALSE, p->isComputer);
+			
+			printf("\n\t\tNew hand: ");
+		} else {
+			printf("%s Stayed: ", p->name);
+		}
+			best_hand(p->hand, FALSE, FALSE);
+			printf("\n");
+			free(result);
+			free(e);
+			free(recommendation);
 
 			return;
 
 		}
 
 		/* monte carlo helper */
-		compute_expected_value(p->hand);
+		recommendation = compute_expected_value(p->hand, p->isComputer);
 
-		printf("%s, Which cards would you like to exchange? (ex: '1,2,3' or '1,5 etc..')\n", p->name);
-
+		j = 0;
 		scanf("%s", result);
-		while (result[i] != '\0'){
-			if (result[i] == ','){
+
+		/* shortcut for not exchanging anything */
+		if (!strncmp(result, "y", strlen("y"))){
+			for (i = 0; i < HAND_SIZE; ++i){
+				if (recommendation[0] == -1)
+					goto do_nothing;
+				if (recommendation[i]){
+					e->card[j++] = p->hand->card[i];
+					p->hand->card[i].suite = -1;
+					p->hand->card[i].value = -1;
+				}
+			}
+		} else {
+			printf("%s, Which cards would you like to exchange? (ex: '1,2,3' or '1,5 etc..')\n", 
+				p->name);
+
+			scanf("%s", result);
+			while (result[i] != '\0'){
+				if (result[i] == ','){
+					i++;
+					continue;
+				}
+
+				k = atoi(&result[i]);
+				k = k-1;
+
+				/* take card out of hand and put it into the exchange struct */
+				temp = p->hand->card[k]; 
+				p->hand->card[k].suite = -1;
+				p->hand->card[k].value = -1;	
+				e->card[j] = temp;
+				j++; 
 				i++;
-				continue;
 			}
-
-			k = atoi(&result[i]);
-			k = k-1;
-
-			/* take card out of hand and put it into the exchange struct */
-			temp = p->hand->card[k]; 
-			p->hand->card[k].suite = -1;
-			p->hand->card[k].value = -1;	
-			e->card[j] = temp;
-			j++; 
-			i++;
 		}
-		if (!p->isComputer){
-			printf("%s Exchanged: ", p->name);
-			for (i = 0; i < j; ++i){
-				printf("%s%ls ", to_val(e->card[i].value), to_suite(e->card[i].suite));
-			}
-			printf(" For: ");
+
+		printf("%s Exchanged: ", p->name);
+		for (i = 0; i < j; ++i){
+			printf("%s%ls ", to_val(e->card[i].value), to_suite(e->card[i].suite));
 		}
+		printf("\n\t\t     For: ");
 		
 		exchange_card(d, e, j);
-		if (!p->isComputer){
 			for (i = 0; i < j; ++i){
 				printf("%s%ls ", to_val(e->card[i].value), to_suite(e->card[i].suite));
 			}
-		}
 		insert_exchange_into_hand(e, p->hand, j);
-		if (!p->isComputer){
-			printf(" New hand: ");
-		}
+		printf("\n\t\tNew hand: ");
+	do_nothing:
+		if (recommendation[0] == -1)
+			printf("%s Stayed: ", p->name);
 		best_hand(p->hand, FALSE, p->isComputer);
+		printf("\n");
+
+		free(result);
+		free(e);
+		free(recommendation);
+
 		return;
 	}
 
@@ -765,16 +833,13 @@ void prompt_player(Player * p, Deck * d){
 void determine_winner(Game * game, Player * players, int p_size){
 	int max, i, counter, rem;
 	max = counter = rem = 0;
-
 	char * result = malloc(sizeof(char));
 	char * split = malloc(sizeof(int)*4);
 
 	/* display hands on last round */
 	show_hands(players, game->player_count, TRUE);
 
-
-	for (i = 0; i < 4; ++i)
-		split[i] = -1;
+	for (i = 0; i < 4; ++i) split[i] = -1;
 
 	/* get best hand value for all players who are active and who have not folded */
 	for (i = 0; i < p_size; ++i){
@@ -797,6 +862,11 @@ void determine_winner(Game * game, Player * players, int p_size){
 
 	/* split pot, more than one winner */
 	if (counter > 1){
+			printf("Tie game, split the pot\n");
+			for (i = 0; i < p_size; ++i)
+				if (split[i] != -1) 
+					printf("%s wins round.\n", players[i].name);
+
 			if (game->pot % counter != 0){ /* if pot is uneven i.e. pot is 32 with a 3 way tie */
 				rem = game->pot % counter;
 				game->pot -= rem;
@@ -805,12 +875,13 @@ void determine_winner(Game * game, Player * players, int p_size){
 						players[i].amount += game->pot / counter;
 				}
 				game->pot = rem;
-			}
-			else {
+			} else {
 				for (i = 0; i < p_size; ++i)
 					if (split[i] != -1)
 						players[i].amount += game->pot / counter;
+
 				}
+				game->pot = 0;
 			}
 	else { /* not a split pot */
 		for (i = 0; i < p_size; ++i){
@@ -825,25 +896,35 @@ void determine_winner(Game * game, Player * players, int p_size){
 	}
 	
 
+	/* Rankings */
+	for (i = 0; i < p_size; ++i){
+		if (players[i].isActive){
+			printf("%s - Score: %d, Chips: %d", 
+			players[i].name, 
+			players[i].hand->value,
+			players[i].amount);
+		}
+		if (players[i].isActive && players[i].hasFolded)
+			printf(" (Folded)");
+		printf("\n");
+	}
+
 	/*rest round */
 	for (i = 0; i < p_size; ++i){
 		if (players[i].isActive){
 			players[i].hasFolded = 0;
 		}
 	}
-
-	/* Rankings */
-	for (i = 0; i < p_size; ++i){
-		if (players[i].isActive){
-			printf("%s - Score: %d, Chips: %d\n", 
-			players[i].name, 
-			players[i].hand->value,
-			players[i].amount);
-		}
-	}
 	
-	printf("Press enter to start next round:\n");
+	printf("Type any key and enter to start next round: ");
+	scanf("%s", result);
+	if (!strncmp(result, "", strlen(""))) /* dummy */
+		clear_screen();
+
+	printf("\n");
+		
 	free(result);
+	free(split);
 }
 
 void insert_exchange_into_hand(Exchange*e, Hand*h, int size){
