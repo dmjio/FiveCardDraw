@@ -894,7 +894,6 @@ void determine_winner(Game * game, Player * players, int p_size){
 		}
 		game->pot = 0;
 	}
-	
 
 	/* Rankings */
 	for (i = 0; i < p_size; ++i){
