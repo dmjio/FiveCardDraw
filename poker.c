@@ -8,6 +8,7 @@
 #define RUN_TESTS 0
 #define TRUE 1
 #define FALSE 0
+#define NUMBER_OF_SAMPLES 1000
 
 void build_deck(Deck * deck){
 	int i, j, c;
@@ -348,7 +349,7 @@ void compute_expected_value(Hand * hand) {
 		/* (1,2,3,4,5) */
 
 	int i, j, size, k, l, z, y;
-	size = 1;
+	size = NUMBER_OF_SAMPLES;
 
 	int cases[32][5] = {
 
@@ -411,6 +412,7 @@ void compute_expected_value(Hand * hand) {
 	shuffle_deck(deck);	
 	memcpy(temp, &hand->card, sizeof(Card) * HAND_SIZE); /* hold on to this for restore */	
 	for (i = 0; i < 32; i++){
+			printf(".");
 			l = 0;
 			for (k = 0; k < HAND_SIZE; ++k){
 				if (cases[i][k]){
@@ -423,7 +425,7 @@ void compute_expected_value(Hand * hand) {
 			}
 
 			if (l == 0) { /* this is for our first case only */
-				best_hand(hand, TRUE, TRUE);
+				best_hand(hand, FALSE, TRUE);
 				/*printf("%d\n", hand->value);*/
 				expected_array[i] = hand->value;
 				memcpy(&hand->card, temp, sizeof(Card) * HAND_SIZE); /* restore hand */
@@ -431,8 +433,6 @@ void compute_expected_value(Hand * hand) {
 			}
 
 			for (j = 0; j < size; j++){
-				print(hand->card, HAND_SIZE);
-				print(e->card, l);
 				memcpy(tempEx, e, sizeof(Exchange));
 				exch:
 					exchange_card(deck, e, l); /* exchange with the deck */
@@ -448,9 +448,8 @@ void compute_expected_value(Hand * hand) {
 					}
 
 				/*printf("exchange \n");*/
-				print(e->card, l);
 				insert_exchange_into_hand(e, hand, l); /* insert the exchange back into the hand */
-				best_hand(hand, TRUE, TRUE);
+				best_hand(hand, FALSE, TRUE);
 				/*printf("%d\n", hand->value);*/
 				expected_array[i] += hand->value;
 				memcpy(&hand->card, temp, sizeof(Card) * HAND_SIZE); /* restore hand */
@@ -460,10 +459,9 @@ void compute_expected_value(Hand * hand) {
 		expected_array[i] = expected_array[i] / size; /* average */
 	}
 
+	printf("\n");
 
-	for (i = 0; i < 32; ++i)
-		printf("Expected value: %d - %d\n", i, expected_array[i]);
-
+	/* find largest value inside our expected values array and its index */
 	j = k = 0;
 	for (i = 0; i < 32; ++i)
 		if (j < expected_array[i]){
@@ -481,7 +479,7 @@ void compute_expected_value(Hand * hand) {
 		printf("MC: I recommend that you exchange cards: ");
 		for (i = 0; i < 5; ++i){
 			if (cases[k][i])
-				printf("%d ", i);
+				printf("%d ", i+1);
 		}
 		printf("\n");
 	}
@@ -501,7 +499,6 @@ void show_hands(Player * players, int player_count, int lastRound){
 		}
 	}
 }
-
 
 void reset_game(Game * g){
 	g = malloc(sizeof(Game));
@@ -644,16 +641,14 @@ int game_winner(Game * game, int psize){
 }
 
 int start_game() {
-	
-    if (RUN_TESTS) return exp_value();  /* enable and disables tests */ 
+
+    if (RUN_TESTS) return test_hands();  /* enable and disables tests */ 
 	
 	Game * game = malloc(sizeof(Game));
 	init_game(game);
 
 	while (!game_winner(game, game->player_count)) {
 		
-		print(game->deck->card, game->deck->size);
-		printf("\n");
 
 		/* deal players */
 		deal_players(game->players, game->deck);
@@ -661,7 +656,7 @@ int start_game() {
 		/* ante up */
 		ante_up(game);
 
-		/* show hands */
+		/* show hand to human player */
 		show_hands(game->players, game->player_count, FALSE);
 
 		/* first round of betting */
@@ -724,7 +719,6 @@ void prompt_player(Player * p, Deck * d){
 		compute_expected_value(p->hand);
 
 		printf("%s, Which cards would you like to exchange? (ex: '1,2,3' or '1,5 etc..')\n", p->name);
-
 
 		scanf("%s", result);
 		while (result[i] != '\0'){

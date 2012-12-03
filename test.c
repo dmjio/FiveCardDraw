@@ -4,7 +4,7 @@
 
 int exp_value(){
 	/* Two-Pair */
-	
+
 	Hand * hand = malloc(sizeof(Hand) * HAND_SIZE);
 
 	hand->card[0].suite=Spades; 	hand->card[0].value = Ace;
@@ -111,7 +111,7 @@ int test_hands(){
 	/* three-of-a-kind */
 	for (i = 0; i < HAND_SIZE-2; ++i) {
 		hand->card[i].suite=Hearts+i;
-		hand->card[i].value = Five;
+		hand->card[i].value = King;
 	}	
 	hand->card[3].suite=Diamonds; hand->card[3].value = Seven;
 	hand->card[4].suite=Clubs; hand->card[4].value = Ace;
