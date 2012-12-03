@@ -1,0 +1,54 @@
+for monte carlo.
+make an array of 32.
+
+for the first index (0) the value is the rank of the current hand.
+for the second index (1) take the first card out of your deck. 
+Simulate 10,000 redraws out of your current deck of 32. 
+Every redraw creates a new hand which has a rank. 
+Add up all these ranks divide by 10,000. Add them to the array.
+
+Seven high is the worst hand.
+
+It goes spades, hearts, clubs, diamonds
+
+
+MC advisor, two main functions.
+
+- grade function(Hand h){ }
+
+what's a grade? a number from 1 to 117?
+
+lowest hand would be value 1 (not possible)
+13 = high card ace.
+
+14 = pair of twos.
+
+32 different decisions. (5 choose 0) ... (5 choose 5) = 32
+MC advisor needs to make a recommendation for one of these.
+
+deal out a million hands
+record what happens each time
+
+...start with 0... play 0 is get 5 new cards
+do this a million times, iterations (n) /* n could be 1,000,000 or 100,000 */
+
+each time record the grade for the current hand. use a 2d array. 
+Int of results[32][117]
+		results[0][+2]++;
+
+for each grade compute a probability (expectation value)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

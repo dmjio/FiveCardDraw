@@ -1,3 +1,5 @@
 
 #include "poker.h"
-void test_hands();
+int test_hands();
+void check_good_shuffle();
+int exp_value();

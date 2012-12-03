@@ -1,5 +1,23 @@
 #include "test.h"
+#define TRUE 1
+#define FALSE 0
 
+int exp_value(){
+	/* Two-Pair */
+	
+	Hand * hand = malloc(sizeof(Hand) * HAND_SIZE);
+
+	hand->card[0].suite=Spades; 	hand->card[0].value = Ace;
+	hand->card[1].suite=Diamonds; hand->card[1].value = Ace;
+	hand->card[2].suite=Spades; 	hand->card[2].value = Seven;
+	hand->card[3].suite=Clubs; 	hand->card[3].value = Three;
+	hand->card[4].suite=Diamonds; hand->card[4].value = Three;
+
+	compute_expected_value(hand);
+
+	return 0;
+
+}
 
 void check_good_shuffle(){
 	int i;
@@ -28,107 +46,107 @@ void check_good_shuffle(){
 
 }
 
-void test_hands(){
+int test_hands(){
 	int i;
-	Card * hand = malloc(sizeof(Card) * HAND_SIZE);
+	Hand * hand = malloc(sizeof(Hand) * HAND_SIZE);
 
-	for (i = 0; i < HAND_SIZE; ++i)
-	{
-		hand[i].suite=Hearts;
-		hand[i].value = Ten + i;
+	for (i = 0; i < HAND_SIZE; ++i) {
+		hand->card[i].suite=Hearts;
+		hand->card[i].value = Ten + i;
 	}
-	print(hand, HAND_SIZE);
-	best_hand(hand); /* should print royal flush for Hearts */
-
+	
+	best_hand(hand, TRUE, TRUE); /* should print royal flush for Hearts */
+	printf("grade: %d\n", hand->value);
 	/* Straight flush */
 
 	for (i = 0; i < HAND_SIZE; ++i) {
-		hand[i].suite=Hearts;
-		hand[i].value = Two + i;
+		hand->card[i].suite=Hearts;
+		hand->card[i].value = Two + i;
 	}
-	print(hand, HAND_SIZE);
-	best_hand(hand); /* should print straight flush for Spades */
+	best_hand(hand, TRUE, TRUE); /* should print straight flush for Spades */
+	printf("grade: %d\n", hand->value);
 
 	/* four of a kind */
 	for (i = 0; i < HAND_SIZE-1; ++i) {
-		hand[i].suite=Hearts+i;
-		hand[i].value = Ace;
+		hand->card[i].suite=Hearts+i;
+		hand->card[i].value = Ace;
 	}
-	hand[4].suite = Diamonds;
-	hand[4].value = Three;
-	print(hand, HAND_SIZE);
-	best_hand(hand); 
+	hand->card[4].suite = Diamonds;
+	hand->card[4].value = Three;
+	best_hand(hand, TRUE, TRUE); 
+	printf("grade: %d\n", hand->value);
 
 	/* full house */
 	for (i = 0; i < 3; ++i) {
-		hand[i].suite=Hearts+i;
-		hand[i].value = King;
+		hand->card[i].suite=Hearts+i;
+		hand->card[i].value = King;
 	}
 	for (i = 0; i < 2; ++i) {
-		hand[i+3].suite=Hearts+i;
-		hand[i+3].value = Ace;
+		hand->card[i+3].suite=Hearts+i;
+		hand->card[i+3].value = Ace;
 	}
-	print(hand, HAND_SIZE);
-	best_hand(hand); 
+	best_hand(hand, TRUE, TRUE); 
+	printf("grade: %d\n", hand->value);
 
 	/* flush */
 	for (i = 0; i < HAND_SIZE-1; ++i) {
-		hand[i].suite=Hearts;
-		hand[i].value = Five+i;
+		hand->card[i].suite=Hearts;
+		hand->card[i].value = Five+i;
 	}
-	hand[4].suite=Hearts;
-	hand[4].value = Ace;
-	print(hand, HAND_SIZE);
-	best_hand(hand); 
+	hand->card[4].suite=Hearts;
+	hand->card[4].value = Ace;
+	best_hand(hand, TRUE, TRUE); 
+	printf("grade: %d\n", hand->value);
 
 	/* straight */
 	for (i = 0; i < HAND_SIZE-1; ++i) {
-		hand[i].suite=Hearts;
-		hand[i].value = Five+i;
+		hand->card[i].suite=Hearts;
+		hand->card[i].value = Five+i;
 	}	
-	hand[4].suite=Clubs;
-	hand[4].value = Four;
-	print(hand, HAND_SIZE);
-	best_hand(hand); 
+	hand->card[4].suite=Clubs;
+	hand->card[4].value = Four;
+	best_hand(hand, TRUE, TRUE); 
+	printf("grade: %d\n", hand->value);
 
 	/* three-of-a-kind */
 	for (i = 0; i < HAND_SIZE-2; ++i) {
-		hand[i].suite=Hearts+i;
-		hand[i].value = Five;
+		hand->card[i].suite=Hearts+i;
+		hand->card[i].value = Five;
 	}	
-	hand[3].suite=Diamonds; hand[3].value = Seven;
-	hand[4].suite=Clubs; hand[4].value = Ace;
+	hand->card[3].suite=Diamonds; hand->card[3].value = Seven;
+	hand->card[4].suite=Clubs; hand->card[4].value = Ace;
 
-	print(hand, HAND_SIZE);
-	best_hand(hand); 
+	best_hand(hand, TRUE, TRUE); 
+	printf("grade: %d\n", hand->value);
 
 	/* Two-Pair */
-	hand[0].suite=Spades; 	hand[0].value = Ace;
-	hand[1].suite=Diamonds; hand[1].value = Ace;
-	hand[2].suite=Spades; 	hand[2].value = Seven;
-	hand[3].suite=Clubs; 	hand[3].value = Three;
-	hand[4].suite=Diamonds; hand[4].value = Three;
-	print(hand, HAND_SIZE);
-	best_hand(hand); 
+	hand->card[0].suite=Spades; 	hand->card[0].value = Ace;
+	hand->card[1].suite=Diamonds; hand->card[1].value = Ace;
+	hand->card[2].suite=Spades; 	hand->card[2].value = Seven;
+	hand->card[3].suite=Clubs; 	hand->card[3].value = Three;
+	hand->card[4].suite=Diamonds; hand->card[4].value = Three;
+	best_hand(hand, TRUE, TRUE); 
+	printf("grade: %d\n", hand->value);
 
 	/* One-Pair */
-	hand[0].suite=Spades; 	hand[0].value = Ace;
-	hand[1].suite=Diamonds; hand[1].value = Ace;
-	hand[2].suite=Clubs; 	hand[2].value = Three;
-	hand[3].suite=Diamonds; hand[3].value = Four;
-	hand[4].suite=Spades; 	hand[4].value = Seven;
-	print(hand, HAND_SIZE);
-	best_hand(hand); 
+	hand->card[0].suite=Spades; 	hand->card[0].value = Ace;
+	hand->card[1].suite=Diamonds; hand->card[1].value = Ace;
+	hand->card[2].suite=Clubs; 	hand->card[2].value = Three;
+	hand->card[3].suite=Diamonds; hand->card[3].value = Four;
+	hand->card[4].suite=Spades; 	hand->card[4].value = Seven;
+	best_hand(hand, TRUE, TRUE); 
+	printf("grade: %d\n", hand->value);
 
 	/* High Card */
-	hand[0].suite=Spades; 	hand[0].value = Ace;
-	hand[1].suite=Diamonds; hand[1].value = King;
-	hand[2].suite=Clubs; 	hand[2].value = Ten;
-	hand[3].suite=Diamonds; hand[3].value = Nine;
-	hand[4].suite=Spades; 	hand[4].value = Seven;
+	hand->card[0].suite=Spades; 	hand->card[0].value = Ace;
+	hand->card[1].suite=Diamonds; hand->card[1].value = King;
+	hand->card[2].suite=Clubs; 	hand->card[2].value = Ten;
+	hand->card[3].suite=Diamonds; hand->card[3].value = Nine;
+	hand->card[4].suite=Spades; 	hand->card[4].value = Seven;
+	best_hand(hand, TRUE, TRUE); 
+	printf("grade: %d\n", hand->value);
 
-	print(hand, HAND_SIZE);
-	best_hand(hand); 
+	check_good_shuffle();
 
-
+	return 0;
 }

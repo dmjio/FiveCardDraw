@@ -48,6 +48,5 @@ Grading metrics:
 30% - correct implementation of Monte Carlo advisor
 
 
- 
 extra credit: wrap the single hand simulator in a game loop which allows for a round of betting
 at each hand, eliminates players when they run out of money, allows a player to fold, etc.
