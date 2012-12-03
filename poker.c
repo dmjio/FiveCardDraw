@@ -644,6 +644,7 @@ int game_winner(Game * game, int psize){
 }
 
 int start_game() {
+	
     if (RUN_TESTS) return exp_value();  /* enable and disables tests */ 
 	
 	Game * game = malloc(sizeof(Game));
