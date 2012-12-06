@@ -2,18 +2,6 @@
 #define TRUE 1
 #define FALSE 0
 
-int test_exchange(){
-	Deck * deck = malloc(sizeof(Deck));
-	Hand * hand = malloc(sizeof(Hand));
-	Exchange * ex = malloc(sizeof(Exchange));
-
-	build_deck(deck);
-	shuffle_deck(deck);
-
-
-	return 0;
-}
-
 int test_queue(){
 	int i,j;
 	Card card;
