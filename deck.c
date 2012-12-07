@@ -1,10 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "utils.h"
 #include "deck.h"
 
 #define SUITE_SIZE 4
+
 
 void init_deck(Deck * deck){
 	build_deck(deck);
@@ -20,7 +17,7 @@ void shuffle_deck(Deck * deck) {
 	}
 }
 
-
+/* builds deck */
 void build_deck(Deck * deck){
 	int i, j, c;
 	c = 0;
@@ -36,6 +33,8 @@ void build_deck(Deck * deck){
 	deck->size = DECK_SIZE;
 }
 
+/* the way I'm implementing the queue mechanism is by tracking the header and tail 
+indices on an array and enqueuing / dequeuing when needed */
 Card deal_card(Deck * deck){ /* dequeue */
 	Card return_card;
 	Card temp;

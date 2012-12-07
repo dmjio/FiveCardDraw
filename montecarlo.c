@@ -1,5 +1,6 @@
 #include "montecarlo.h"
 
+/* where the magic happens */
 int * compute_expected_value(Hand * hand, int isCPU) {
 
 	/* discard none (5 choose 0) == 1 */
@@ -29,6 +30,10 @@ int * compute_expected_value(Hand * hand, int isCPU) {
 	int i, j, size, k, l, z, y;
 	size = NUMBER_OF_SAMPLES;
 	int * result = malloc(sizeof(int) * 5);
+
+
+	/* this bit mask array will map out which combinations are used in the exchange */
+	/* it will also be used to print out the final result of the MC's recommendations */
 
 	int cases[32][5] = {
 
@@ -76,7 +81,7 @@ int * compute_expected_value(Hand * hand, int isCPU) {
 	Exchange * tempEx = malloc(sizeof(Exchange));
 	Deck * deck = malloc(sizeof(Deck));
 	Card * temp = malloc(sizeof(Card) * HAND_SIZE);
-	int expected_array[32];
+	int expected_array[32]; /* this will hold all of our expected values */
 
 	/* cleanse our array */
 	for (i = 0; i < 32; ++i) expected_array[i] = 0;
@@ -94,7 +99,7 @@ int * compute_expected_value(Hand * hand, int isCPU) {
 	for (i = 0; i < 32; i++){
 			l = 0;
 			for (k = 0; k < HAND_SIZE; ++k){
-				if (cases[i][k]){
+				if (cases[i][k]){ /* use the cases (bitmap array) to find what cards to exchange, add them from the hand into the exchange */
 					e->card[l] = hand->card[k];
 					l += 1;
 					e->count = l;
@@ -103,7 +108,7 @@ int * compute_expected_value(Hand * hand, int isCPU) {
 				}
 			}
 
-			if (l == 0) { /* this is for our first case only */
+			if (l == 0) { /* this is for our first case only, if everything is 0 no exchanges need to be made, just take current value of hand, no need to run monte carlo */
 				best_hand(hand, FALSE, TRUE);
 				/*printf("%d\n", hand->value);*/
 				expected_array[i] = hand->value;
@@ -121,7 +126,7 @@ int * compute_expected_value(Hand * hand, int isCPU) {
 								(e->card[z].value == temp[y].value)){
 									/*printf("Already exists: %s !!\n", to_card(e->card[z]));*/
 									memcpy(e, tempEx, sizeof(Exchange));
-									goto exch;
+									goto exch; /* not sure how you feel about goto's... but this trick makes reentry logic very nice */
 							}
 						}
 					}
@@ -143,7 +148,7 @@ int * compute_expected_value(Hand * hand, int isCPU) {
 	for (i = 0; i < 32; ++i)
 		if (j < expected_array[i]){
 			j = expected_array[i];
-			k = i;
+			k = i; /* this k will correspond to an index in our cases array which will have a series of 0's and 1's that correspond to which cards to exchange in the users hand */
 		}
 
 	/*printf("largest: %d at %d\n", j, k);*/
@@ -156,7 +161,7 @@ int * compute_expected_value(Hand * hand, int isCPU) {
 		else if (k > 0){ 
 			printf("MC: I recommend that you exchange card(s): ");
 			for (i = 0; i < 5; ++i){
-				if (cases[k][i])
+				if (cases[k][i]) /* check our cases array to print out the indices of what cards in the current users hand should be exchanged */
 					printf("%d ", i+1);
 			}
 			printf("\n");

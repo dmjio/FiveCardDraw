@@ -3,6 +3,7 @@
 #include <string.h>
 #include "player.h"
 
+
 void deal_players(Player * players, Deck * deck){
 	int i,j;
 	Card card;
@@ -24,6 +25,9 @@ void show_hands(Player * players, int player_count, int lastRound){
 	}
 }
 
+/* this method prompts both the CPU and HU players on what to exchange */
+/* cpu will always select the MC's recommendation */
+/* HU's have a choice to reject or accept the MC's rec */
 void prompt_player(Player * p, Deck * d){
 	Card temp;
 	int * recommendation = malloc(sizeof(int) * HAND_SIZE);
@@ -47,6 +51,7 @@ void prompt_player(Player * p, Deck * d){
 						p->hand->card[i].value = -1;
 					}
 			
+			/* if Human, display what was exchanged */
 			printf("%s Exchanged: ", p->name);
 			for (i = 0; i < j; ++i){	
 				printf("%s%ls ", to_val(e->card[i].value), to_suite(e->card[i].suite));
@@ -57,10 +62,12 @@ void prompt_player(Player * p, Deck * d){
 				printf("%s%ls ", to_val(e->card[i].value), to_suite(e->card[i].suite));
 			}
 
+			/* make the exchange */
 			insert_exchange_into_hand(e, p->hand, j);
 			
 			printf("\n\t\tNew hand: ");
 		} else {
+			/* if human */
 			printf("%s Stayed: ", p->name);
 		}
 			best_hand(p->hand, FALSE, FALSE);
@@ -178,7 +185,9 @@ void init_players(Player * players, int size){
 		players[i].amount = TOTAL_CASH / size;
 		players[i].isBetter = 0;
 	}
-	players[0].isComputer = 0;
-	players[0].name = "HU - Player 1 ";
-	players[0].isBetter = 0;
+	if (!ONLYCPU){
+		players[0].isComputer = 0;
+		players[0].name = "HU - Player 1 ";
+		players[0].isBetter = 0;
+	}
 }

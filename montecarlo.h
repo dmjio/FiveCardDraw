@@ -6,7 +6,7 @@
 #include "utils.h"
 
 
-#define NUMBER_OF_SAMPLES 10000
+#define NUMBER_OF_SAMPLES 20000
 
 int * compute_expected_value(Hand * hand, int isCPU);
 

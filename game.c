@@ -4,12 +4,14 @@
 #include "utils.h"
 #include "game.h"
 
+/* method for resetting game loop */
 void reset_game(Game * g){
 	free(g);
 	Game * game = malloc(sizeof(Game));
 	init_game(game);
 }
 
+/* this method begins the game */
 void init_game(Game * game){
 	printf("Welcome to 5-card draw Poker with Monte Carlo simulations!\n");
 	game->deck = malloc(sizeof(Deck));
@@ -22,6 +24,7 @@ void init_game(Game * game){
 	init_players(game->players, PLAYER_SIZE);
 }
 
+/* determines whether a user is eligible to play, if they can't ante up, they lose */
 void ante_up(Game * game){
 	int i, count;
 	count = 0;
@@ -44,6 +47,7 @@ void ante_up(Game * game){
 	printf("Pot at: %d\n", game->pot);
 }
 
+/* called twice, once before exchange, once after */
 void betting_round(Game * game, Player * players, int player_size){
 	int i;
 	i = 0;
@@ -135,7 +139,7 @@ void betting_round(Game * game, Player * players, int player_size){
 }
 
 
-
+/* determines winner */
 void determine_winner(Game * game, Player * players, int p_size){
 	int max, i, counter, rem;
 	max = counter = rem = 0;
@@ -214,7 +218,6 @@ void determine_winner(Game * game, Player * players, int p_size){
 		printf("\n");
 	}
 
-	/*rest round */
 	for (i = 0; i < p_size; ++i){
 		if (players[i].isActive){
 			players[i].hasFolded = 0;

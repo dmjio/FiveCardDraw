@@ -1,6 +1,8 @@
 
 #include "utils.h"
 
+
+/* handy helper methods for game flow */
 void swap(Card * d1, Card * d2){
 	Card * temp = malloc(sizeof(Card));
     memcpy(temp, d1, sizeof(Card));
