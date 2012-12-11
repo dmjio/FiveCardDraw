@@ -9,19 +9,19 @@ and then run
 You should see a few warnings to do with the unicode characters I am using. This is fine.
 I am using unicode characters to display suite values. As far as I know this is a portable solution. I have tested it on OSX and ubuntu and it works. It only generates warnings, it does not generate errors, or inhibit the flow of the game.
 
-In this version of the 5 card draw I have created 4 players.
+In this version of 5 card draw poker I have created 4 players.
 It is possible that all players be computers that play against one another.
 To enable this change "#define ONLYCPU 0" to be "#define ONLYCPU 1" in the player.h file. I recommed running the game with the ONLYCPU flag marked as 0 first.
 
 The game works by initializing all structures, building the deck, players, game, shuffling the deck, and then dealing out cards to players.
 
-Once cards are dealt initially they can be seen by the human player. (This is kind of an unfair advantage that the human player has, but for the sake of the grader I want him to see exactly what is going on).
+Once cards are dealt initially they can be seen by the human player. (This is kind of an unfair advantage that the human player has, but for the sake of the user I want him/her to see exactly what is going on).
 
 After cards are dealt and displayed on the screen each user will "ante up". This means each user HAS to put 5 chips (out of their initial 100) into the pot. If a user (Human or AI) cannot put in 5 chips they automatically lose and their remaining chips will go into the pot. 
 
 A better is chosen to start out an initial round of betting. This user is chosen randomly but he must be active and he cannot have already folded his/her hand. The bet amount that this user chooses is also chosen randomly by picking a random number less than the current players chip amount. If other CPU players have more chips (or exactly the same amount of chips) that are being bet they will automatically call the bet. If a CPU player has less chips than the bet they will automatically fold. This means that a player with a high amount of chips can potentially "buy the pot." This assumption is correct, but since a betting user is chosen at random the likely hood is decreased. 
 
-After the better bets, the human user (being more intelligent) can either fold or call the bet at will. (BUT, if an AI player bets more than the chip amount of the human player the human player will automatically fold) If he chooses to call the bet a monte carlo simulation begins.
+After the better bets, the human user (being more intelligent) can either fold or call the bet at will. (BUT, if an AI player bets more than the chip amount of the human player the human player will automatically fold). If he chooses to call the bet a monte carlo simulation begins.
 
 The way I have implemented it is by using a linear scale to value every single hand.
 There are 32 possible combinations of hands to exchange. For each combination I create a new deck, shuffle it, make an exchange, and add up the running total of the current value of the exchanged hand to a spot on an array of length 32. Once this has happened 20000 times for that hand. The average is calculated by dividing all the sum of all the hands by 20000. This value is stored in an array position that corresponds to one exchange combination. This process is repeated until all 32 combinations have been made. 
