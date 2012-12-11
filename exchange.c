@@ -1,5 +1,6 @@
 #include "exchange.h"
 
+/* should be self-explanatory, I'm putting the values of the exchange struct from the deck back into the hand */
 void insert_exchange_into_hand(Exchange*e, Hand*h, int size){
 	int i;
 	Card temp;
@@ -12,7 +13,7 @@ void insert_exchange_into_hand(Exchange*e, Hand*h, int size){
 		}
 	}
 
-
+/* exchanging cards from the deck into the exchange struct */
 Exchange * exchange_card(Deck * deck, Exchange * e, int count){
 	Card card;
 	int i;

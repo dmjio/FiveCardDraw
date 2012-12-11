@@ -9,7 +9,8 @@ void best_hand(Hand * hand, int isFinalRound, int isCPU){
 
 			/* this method is a fall through that 
 				calculates hand value and 
-				prints results of hand */
+				prints results of hand, it works by sorting the hand and then 
+				making comparison to derive the value of the hand */
 
 
 	int i, oneS, twoS, threeS, fourS, fiveS, oneV, twoV, threeV, fourV, fiveV;

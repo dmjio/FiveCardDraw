@@ -3,6 +3,7 @@
 #include <string.h>
 #include "poker.h"
 
+/* this method aggregates everything and is where the core high level game logic exists */
 int start_game() {
 
     if (RUN_TESTS) return test_queue();  /* enable and disables tests */ 

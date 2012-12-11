@@ -51,7 +51,7 @@ void prompt_player(Player * p, Deck * d){
 						p->hand->card[i].value = -1;
 					}
 			
-			/* if Human, display what was exchanged */
+			/* if CPU display what was exchanged */
 			printf("%s Exchanged: ", p->name);
 			for (i = 0; i < j; ++i){	
 				printf("%s%ls ", to_val(e->card[i].value), to_suite(e->card[i].suite));
@@ -67,11 +67,13 @@ void prompt_player(Player * p, Deck * d){
 			
 			printf("\n\t\tNew hand: ");
 		} else {
-			/* if human */
+			/* if the MC recommended to stay, then stay */
 			printf("%s Stayed: ", p->name);
 		}
 			best_hand(p->hand, FALSE, FALSE);
 			printf("\n");
+
+			/* free temp malloc'd space */
 			free(result);
 			free(e);
 			free(recommendation);

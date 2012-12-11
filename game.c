@@ -227,7 +227,7 @@ void determine_winner(Game * game, Player * players, int p_size){
 	printf("Type any key and enter to start next round: ");
 	scanf("%s", result);
 	if (!strncmp(result, "", strlen(""))) /* dummy */
-		clear_screen();
+		clear_screen(); /* this is a hack to clear the screen, it just moves text up to the top of the screen */
 
 	printf("\n");
 		
@@ -235,6 +235,7 @@ void determine_winner(Game * game, Player * players, int p_size){
 	free(split);
 }
 
+/* while a winner has not been found, continue playing, otherwise print a winnner and prompt for replay */
 int game_winner(Game * game, int psize){
 	int i;
 	char * result = malloc(sizeof(char));
