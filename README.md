@@ -23,13 +23,13 @@ A better is chosen to start out an initial round of betting. This user is chosen
 
 After the better bets, the human user (being more intelligent) can either fold or call the bet at will. (BUT, if an AI player bets more than the chip amount of the human player the human player will automatically fold). If he chooses to call the bet a monte carlo simulation begins.
 
+###Monte Carlo
 The way I have implemented it is by using a linear scale to value every single hand.
 There are 32 possible combinations of hands to exchange. For each combination I create a new deck, shuffle it, make an exchange, and add up the running total of the current value of the exchanged hand to a spot on an array of length 32. Once this has happened 20000 times for that hand. The average is calculated by dividing all the sum of all the hands by 20000. This value is stored in an array position that corresponds to one exchange combination. This process is repeated until all 32 combinations have been made.
 
 The final step is to do a linear search for the maximum value of this array.
 Once that value has been found the recommended cards to exchange are found by referencing a bit mask array that corresponds to the possible combinations. It finds all instances where the slot in the bitmask array is of value 1 and recommends those cards be exchanged.
 
-###Monte Carlo
 Side note: The number of exchanges or "samples" can be changed in the montecarlo.h "#define NUMBER_OF_SAMPLES 20000" file, Right now 32 * 20,000 or 640,000 exchanges are made, note moving it up to 1,000,000 or 32,000,000 total takes at least 2 minutes each exchange. So beware.
 
 Once this process is complete the MC advisor will ask the player if he wants to accept his recommendation. If yes, the exchange is made, if not the user can select (using a comma delimited list of the indexes of the hand array, i.e. (1,2,3) or (2,4,3) to decide what cards to exchange.
