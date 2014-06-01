@@ -2,7 +2,6 @@
 #define __GAME_H_
 #define ANTE_AMOUNT 5
 
-#include "player.h"
 #include "utils.h"
 #include "deck.h"
 #include "player.h"
