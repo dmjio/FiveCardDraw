@@ -12,7 +12,7 @@
 
 #define TOTAL_CASH 400
 #define PLAYER_SIZE 4
-#define ONLYCPU 0
+#define ONLYCPU 1
 
 typedef struct {
 	Hand * hand;
